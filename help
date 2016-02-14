@@ -1,0 +1,65 @@
+#!/usr/bin/python
+
+import sys
+import os
+import json
+
+
+__version__ = 1.0
+__author__ = 'gua'
+
+home_dir = os.path.expanduser('~')
+db_file = '.gua.help.json'
+db_path = os.path.join(home_dir, db_file)
+
+help_dict = {}
+
+
+def init():
+    if not os.path.exists(db_path):
+        return
+    with open(db_path, 'r') as f:
+        content = f.read()
+        try:
+            help_dict.update(json.loads(content))
+        except:
+            pass
+
+
+def usage():
+    print('help usage:\n')
+    print('$help action')
+    print('  print help for action')
+    print('$help action "action arguments"')
+    print('  save help for action')
+
+
+def print_help():
+    spoon = sys.argv[1]
+    not_found = ['help "{}" not found'.format(spoon)]
+    helps = help_dict.get(spoon, not_found)
+    for i, h in enumerate(helps):
+        print(h)
+
+
+def save_help():
+    print('help saved')
+    spoon = sys.argv[1]
+    help_dict[spoon] = help_dict.get(spoon, []) + sys.argv[2:]
+    with open(db_path, 'w') as f:
+        f.write(json.dumps(help_dict, indent=2))
+
+
+def main():
+    argc = len(sys.argv)
+    actions = {
+        2: print_help,
+        3: save_help,
+    }
+    action = actions.get(argc, usage)
+    action()
+
+
+if __name__ == '__main__':
+    init()
+    main()
